@@ -28,7 +28,6 @@ read username
 echo -n Enter port:
 read port
 
-#{
 #update and upgrade
 sudo apt update -y && sudo apt upgrade -y
 
@@ -103,7 +102,6 @@ printf '\nxmlrpc_port = $port' >> /etc/$username-server.conf
 sudo systemctl start $username-server.service
 sudo systemctl enable $username-server.service
 sudo systemctl status $username-server.service
-#} &> .$username.log
 
 printf -n DONE!
 
