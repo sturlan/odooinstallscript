@@ -72,6 +72,11 @@ sudo cp /usr/local/bin/wkhtmltopdf /usr/bin
 sudo cp /usr/local/bin/wkhtmltoimage /usr/bin
 sudo cp /opt/$username/debian/odoo.conf /etc/$username-server.conf
 
+#enable logging
+sudo bash -c 'echo "logfile=/var/log/odoo/odoo-server.log" >> /etc/odoo-server.conf'
+sudo touch /var/log/odoo/odoo-server.log
+sudo chown odoo:odoo /var/log/odoo/odoo-server.log
+
 #service file
 sudo touch /lib/systemd/system/$username-server.service
 sudo printf '[Unit]
