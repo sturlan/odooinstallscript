@@ -25,9 +25,9 @@ sudo apt update && apt upgrade && apt install -y sudo wget git python3 python3-p
 
 #user and folder setup
 sudo adduser --system --home=/opt/$user --group $user
-sudo -u postgres psql -c "CREATE USER '$user' WITH SUPERUSER PASSWORD '$password';"
+sudo -u postgres psql -c "CREATE USER $user WITH SUPERUSER PASSWORD '$password';"
 
-sudo mkdir /opt/$user /opt/$user/backup /opt/$user/custom /var/log/$user
+sudo mkdir /opt/$user /opt/backup/$user /opt/custom/$user /var/log/$user
 if [[ "$install_enterprise" == "yes" ]]; then
 	sudo mkdir /opt/$user/enterprise
 	sudo chown $user:$user /opt/$user/enterprise
@@ -40,15 +40,11 @@ sudo git clone https://www.github.com/odoo/odoo --depth 1 --branch $branch --sin
 sudo /opt/$user/setup/debinstall.sh
 
 
-#wkhtmltopdf
-wget -O /opt/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
-sudo dpkg -i /opt/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
-
 #conf file
 if [[ "$install_enterprise" == "yes" ]]; then
 	cat > /etc/'"$user.conf"' <<EOF
 	[options]
-	addons_path = /opt/'"$home"'/addons,/opt/'"$user"'/enterprise,/opt/'"$user"'/custom
+	addons_path = /opt/'"$home"'/addons,/opt/enterprise/'"$user"',/opt/custom/'"$user"'
 	db_host = localhost
 	db_port = 5432
 	db_user = '"$user"'
@@ -59,7 +55,7 @@ if [[ "$install_enterprise" == "yes" ]]; then
 else
 	cat > /etc/'"$user.conf"' <<EOF
 	[options]
-	addons_path = /opt/'"$user"'/addons,/opt/'"$user"'/custom
+	addons_path = /opt/'"$user"'/addons,/opt/custom/'"$user"'
 	db_host = localhost
 	db_port = 5432
 	db_user = '"$user"'
@@ -88,8 +84,22 @@ ExecStart=/opt/$user/odoo-bin -c /etc/$user.conf
 WantedBy=default.target
 EOF
 
+systemctl daemon-reload
+systemctl enable $user.service
+systemctl start $user.service
+systemctl status $user.service
 
 sudo chmod 755 /lib/systemd/system/$user-server.service
 sudo chown root: /lib/systemd/system/$user-server.service
 
+wkhtmltopdf
+wget -O /opt/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
+sudo dpkg -i /opt/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
+
 printf -n DONE!
+printf -n $user
+printf -n $branch
+printf -n $port
+printf -n $password
+
+exit
